@@ -51,6 +51,7 @@ const origensPermitidas = [
   'http://127.0.0.1:5500',
   'http://localhost:5173', // caso use Vite
   'http://localhost:3000',
+  'https://inventory-rj02.onrender.com',
   ...(process.env.ALLOWED_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())

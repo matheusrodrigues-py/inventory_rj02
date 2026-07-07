@@ -11,7 +11,7 @@
       - key: DB_PATH
         value: /var/data/controle_ativos.db
       - key: ALLOWED_ORIGINS
-        value: https://controle-ativos-spx.onrender.com
+        value: https://inventory-rj02.onrender.com
     disk:
       name: controle-ativos-data
       mountPath: /var/data
