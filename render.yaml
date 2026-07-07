@@ -1,0 +1,18 @@
+﻿services:
+  - type: web
+    name: controle-ativos-spx
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 24
+      - key: DB_PATH
+        value: /var/data/controle_ativos.db
+      - key: ALLOWED_ORIGINS
+        value: https://controle-ativos-spx.onrender.com
+    disk:
+      name: controle-ativos-data
+      mountPath: /var/data
+      sizeGB: 1

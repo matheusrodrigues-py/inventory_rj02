@@ -1,0 +1,338 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Ativos - Shopee Xpress</title>
+  <link rel="stylesheet" href="assets/controle-ativos.css">
+</head>
+<body>
+  <section class="login-screen" id="login-screen">
+    <form class="login-card" id="login-form">
+      <div class="login-brand">
+        <div class="brand-mark"><img src="assets/shopee-logo.png" alt="Shopee"></div>
+        <div>
+          <strong>Controle de Ativos</strong>
+          <span>Shopee Xpress</span>
+        </div>
+      </div>
+      <h1>Acesse o painel</h1>
+      <p>Gerencie ativos, usuários e requisições operacionais.</p>
+      <label class="field">
+        <span>E-mail</span>
+        <input type="email" id="login-email" autocomplete="username" required placeholder="ana@shopeexpress.com">
+      </label>
+      <label class="field">
+        <span>Senha</span>
+        <input type="password" id="login-senha" autocomplete="current-password" required placeholder="Senha temporária">
+      </label>
+      <button class="btn primary full" type="submit">Entrar</button>
+      <small class="muted">Se a API estiver offline, o painel abre em modo demonstração.</small>
+    </form>
+  </section>
+
+  <div id="app-shell" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark"><img src="assets/shopee-logo.png" alt="Shopee"></div>
+        <div>
+          <strong>Controle de Ativos</strong>
+          <span>Shopee Xpress</span>
+        </div>
+      </div>
+
+      <nav class="side-nav" aria-label="Navegação principal">
+        <button class="active" data-view="overview"><span class="nav-icon">⌂</span>Visão geral</button>
+        <button data-view="inventory"><span class="nav-icon">▦</span>Inventário de Ativos</button>
+        <button data-view="requests"><span class="nav-icon">◴</span>Requisições <span class="nav-badge" id="badge-pendentes">0</span></button>
+        <button data-view="users"><span class="nav-icon">◎</span>Usuários</button>
+        <button data-view="reports"><span class="nav-icon">▤</span>Relatórios</button>
+        <button data-view="settings"><span class="nav-icon">⚙</span>Configurações</button>
+      </nav>
+
+      <div class="help-card">
+        <strong>Precisa de ajuda?</strong>
+        <span>Fale com o time responsável para suporte.</span>
+        <button class="btn ghost-light" id="open-ticket-btn">Abrir chamado</button>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebar-avatar">AD</div>
+        <div>
+          <strong id="sidebar-user-name">Admin</strong>
+          <span id="sidebar-user-role">Administrador</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="icon-btn" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="page-heading">
+          <h1 id="page-title">Visão geral</h1>
+          <p id="page-subtitle">Resumo operacional do inventário e das requisições.</p>
+        </div>
+        <div class="topbar-actions">
+          <label class="global-search">
+            <span>⌕</span>
+            <input id="global-search" type="search" placeholder="Buscar ativo, usuário ou requisição">
+          </label>
+          <button class="notification-btn" aria-label="Notificações">🔔<span id="notification-badge">0</span></button>
+          <span id="api-status" class="api-pill offline">API offline</span>
+          <button class="btn secondary" id="refresh-btn">Atualizar</button>
+          <button class="btn secondary" id="logout-btn">Sair</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-overview">
+        <div class="control-title">
+          <div class="control-pulse">⌁</div>
+          <div>
+            <h2>Centro de Controle Operacional</h2>
+            <p>Monitoramento estratégico dos ativos, disponibilidade, pendências e movimentações por setor.</p>
+          </div>
+          <button class="btn secondary" id="overview-refresh-btn">Atualizar</button>
+        </div>
+
+        <article class="smart-alerts panel">
+          <strong>Alertas inteligentes</strong>
+          <div id="overview-alerts" class="alert-strip"></div>
+        </article>
+
+        <div class="metrics-grid overview-kpis executive-kpis" id="overview-main-kpis"></div>
+
+        <div class="control-grid score-grid">
+          <article class="panel score-card">
+            <div>
+              <h2>Score Operacional</h2>
+              <strong id="overview-score-value">0<span>/100</span></strong>
+              <p>Indicador composto com base em disponibilidade, utilização, manutenção e pendências.</p>
+            </div>
+            <div class="score-ring" id="overview-score-ring"><span>0</span><small>/100</small></div>
+          </article>
+          <article class="panel health-card">
+            <div class="panel-header"><div><h2>Saúde do Inventário</h2><p>Consistência operacional dos ativos cadastrados.</p></div><span class="health-status" id="overview-health-status">-</span></div>
+            <strong id="overview-health-value">0%</strong>
+            <div class="health-track"><span id="overview-health-bar"></span></div>
+            <small id="overview-health-summary">Aguardando dados.</small>
+          </article>
+        </div>
+
+        <div class="control-grid analytics-grid">
+          <article class="panel"><h2>Distribuição por tipo de ativo</h2><div id="overview-type-distribution" class="dashboard-bars"></div></article>
+          <article class="panel"><h2>Utilização por setor</h2><div id="overview-sector-utilization" class="dashboard-bars"></div></article>
+          <article class="panel pending-panel"><h2>Pendências de devolução</h2><div id="overview-pending-panel"></div></article>
+        </div>
+
+        <div class="control-grid detail-grid-overview">
+          <article class="panel"><h2>Pendências por liderança</h2><div class="table-wrap compact"><table><thead><tr><th>Líder</th><th>Setor</th><th>Ativos</th><th>Pendências</th><th>Status</th></tr></thead><tbody id="overview-leader-ranking"></tbody></table></div></article>
+          <article class="panel"><h2>Próximas manutenções</h2><div id="overview-maintenance-list" class="maintenance-list"></div></article>
+          <article class="panel"><h2>Últimas movimentações</h2><div class="table-wrap compact"><table><thead><tr><th>Ativo</th><th>Ação</th><th>Setor</th><th>Responsável</th><th>Data/Hora</th></tr></thead><tbody id="overview-recent-movements"></tbody></table></div></article>
+        </div>
+
+        <article class="panel financial-panel">
+          <div class="panel-header"><div><h2>Indicador financeiro</h2><p>Estrutura preparada para receber valores patrimoniais dos ativos.</p></div></div>
+          <div id="overview-financial-summary" class="financial-grid"></div>
+        </article>
+      </section>
+      <section class="view" id="view-inventory">
+        <div class="section-head">
+          <div>
+            <h2>Inventário de Ativos</h2>
+            <p>Gerencie, filtre e acompanhe todos os ativos cadastrados.</p>
+          </div>
+          <div class="section-actions">
+            <button class="btn primary" id="new-asset-btn">Novo ativo</button>
+            <button class="btn secondary" id="import-btn">Importar</button>
+            <button class="btn secondary" id="export-assets-btn">Exportar</button>
+            <button class="btn secondary" id="label-btn">Gerar etiqueta</button>
+          </div>
+        </div>
+
+        <div class="metrics-grid tight" id="inventory-metrics"></div>
+
+        <article class="panel">
+          <div class="tabs" id="inventory-tabs">
+            <button class="active" data-status="">Todos os ativos</button>
+            <button data-status="Disponivel">Disponíveis</button>
+            <button data-status="Em Uso">Em uso</button>
+            <button data-status="Manutencao">Manutenção</button>
+            <button data-tab-extra="movements">Movimentações</button>
+            <button data-tab-extra="categories">Categorias</button>
+          </div>
+
+          <div class="filters-grid">
+            <label class="field"><span>Busca</span><input id="asset-search" type="search" placeholder="Patrimônio, série ou responsável"></label>
+            <label class="field"><span>Categoria</span><select id="asset-category-filter"><option value="">Todas</option><option>PDA</option><option>Notebook</option><option value="Radio">Rádio</option><option>Coletor</option><option>Impressora</option><option>Paleteira</option><option>Outro</option></select></label>
+            <label class="field"><span>Status</span><select id="asset-status-filter"><option value="">Todos</option><option value="Disponivel">Disponível</option><option value="Em Uso">Em uso</option><option value="Manutencao">Manutenção</option><option value="Baixado">Baixado</option></select></label>
+            <label class="field"><span>Localização</span><input id="asset-location-filter" type="text" placeholder="Área ou local"></label>
+            <label class="field"><span>Centro de distribuição</span><input id="asset-cd-filter" type="text" placeholder="Ex: RJ02"></label>
+            <label class="field"><span>Período</span><input id="asset-period-filter" type="date"></label>
+            <div class="filter-actions"><button class="btn secondary" id="apply-filters-btn">Filtros</button><button class="btn ghost" id="clear-filters-btn">Limpar filtros</button></div>
+          </div>
+
+          <div class="bulk-bar" id="bulk-bar" hidden>
+            <strong><span id="selected-count">0</span> selecionado(s)</strong>
+            <button class="btn secondary" data-bulk="move">Mover</button>
+            <button class="btn secondary" data-bulk="edit">Editar</button>
+            <button class="btn secondary" data-bulk="maintenance">Enviar para manutenção</button>
+            <button class="btn danger" data-bulk="retire">Baixar</button>
+          </div>
+
+          <div class="table-wrap"><table class="data-table"><thead><tr><th><input type="checkbox" id="select-all-assets"></th><th>Patrimônio / ID</th><th>Ativo</th><th>Categoria</th><th>Nº de série</th><th>Status</th><th>Responsável</th><th>Localização</th><th>CD</th><th>Última atualização</th><th>Ações</th></tr></thead><tbody id="assets-table"></tbody></table></div>
+          <div class="pagination"><span id="asset-results-count">0 resultados</span><label>Itens por página <select id="asset-page-size"><option>8</option><option>12</option><option>20</option></select></label><div><button class="btn secondary" id="prev-assets">Anterior</button><span id="asset-page-label">1/1</span><button class="btn secondary" id="next-assets">Próxima</button></div></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-requests">
+        <div class="section-head">
+          <div><h2>Requisições</h2><p>Registre a entrega e devolução dos ativos bipados pela operação.</p></div>
+        </div>
+        <article class="panel request-form-panel request-unified">
+          <div class="panel-header"><div><h2>Registrar entrega</h2><p>Bipe ou digite o número de série do ativo para carregar os dados automaticamente.</p></div></div>
+          <div class="request-card-grid">
+            <form id="pda-request-form" class="request-form">
+              <label class="field span-2"><span>Número de série</span><input id="req-serial" type="text" required autocomplete="off" placeholder="Bipe o serial do ativo"><small id="req-asset-hint">Aguardando leitura do ativo.</small></label>
+              <div class="asset-found-card span-2" id="req-asset-card" hidden></div>
+              <label class="field"><span>Nome do Colaborador</span><input id="req-employee" type="text" required placeholder="Nome completo"></label>
+              <label class="field"><span>Nome do Setor</span><span class="select-action"><select id="req-sector" required></select><button type="button" class="icon-btn small" data-option-action="add" data-option-kind="sector" title="Adicionar setor">+</button><button type="button" class="icon-btn small" data-option-action="edit" data-option-kind="sector" title="Editar setor">E</button><button type="button" class="icon-btn small" data-option-action="delete" data-option-kind="sector" title="Excluir setor">×</button></span></label>
+              <label class="field"><span>Nome do Líder</span><span class="select-action"><select id="req-leader" required></select><button type="button" class="icon-btn small" data-option-action="add" data-option-kind="leader" title="Adicionar líder">+</button><button type="button" class="icon-btn small" data-option-action="edit" data-option-kind="leader" title="Editar líder">E</button><button type="button" class="icon-btn small" data-option-action="delete" data-option-kind="leader" title="Excluir líder">×</button></span></label>
+              <label class="field"><span>Turno</span><select id="req-shift" required><option value="">Selecione</option><option>T1</option><option>T2</option><option>T3</option><option>Administrativo</option></select></label>
+              <label class="field span-2"><span>Data</span><input id="req-date-now" type="text" disabled></label>
+              <div class="form-actions span-2"><button type="button" class="btn secondary" id="cancel-request-btn">Limpar</button><button type="submit" class="btn primary">Registrar entrega</button></div>
+            </form>
+            <aside class="request-summary-card">
+              <h2>Resumo da entrega</h2>
+              <div id="request-summary" class="summary-list"></div>
+            </aside>
+          </div>
+        </article>
+
+        <article class="panel top-space" id="my-requests-panel">
+          <div class="panel-header"><div><h2>Ativos em uso</h2><p>Use a ação de devolução no fim do expediente.</p></div><label class="global-search compact"><span>⌕</span><input id="in-use-search" type="search" placeholder="Buscar número de série"></label></div>
+          <div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>Colaborador</th><th>Setor</th><th>Líder</th><th>Turno</th><th>Entrega</th><th>Status</th><th>Ações</th></tr></thead><tbody id="pda-requests-table"></tbody></table></div>
+        </article>
+        <article class="panel top-space">
+          <div class="panel-header"><div><h2>Últimas movimentações</h2><p>Entregas e devoluções recentes.</p></div><button class="btn ghost" id="view-all-requests">Ver ativos em uso</button></div>
+          <div id="last-pda-requests" class="mini-list"></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-users">
+        <div class="section-head">
+          <div><h2>Usuários</h2><p>Gerencie acessos, permissões e perfis do sistema.</p></div>
+          <div class="section-actions">
+            <button class="btn primary" id="new-user-btn">Novo usuário</button>
+            <button class="btn secondary" id="export-users-btn">Exportar usuários</button>
+            <button class="btn secondary" id="access-logs-btn">Logs de acesso</button>
+            <button class="btn secondary" id="refresh-users-btn">Atualizar</button>
+          </div>
+        </div>
+        <div class="metrics-grid users-dashboard" id="users-metrics"></div>
+        <article class="panel users-panel">
+          <div class="filters-grid user-filters">
+            <label class="field"><span>Busca</span><input id="user-search" type="search" placeholder="Nome, e-mail, matrícula ou setor"></label>
+            <label class="field"><span>Perfil</span><select id="user-filter-role"><option value="">Todos</option><option value="master">MASTER</option><option value="admin">Administrador</option><option value="gestor">Líder</option><option value="operador">Operador</option><option value="visualizador">Visualizador</option><option value="suporte_ti">Suporte TI</option></select></label>
+            <label class="field"><span>Status</span><select id="user-filter-status"><option value="">Todos</option><option>Ativo</option><option>Inativo</option><option>Bloqueado</option><option>Pendente</option><option>Excluído</option></select></label>
+            <label class="field"><span>Unidade/CD</span><input id="user-filter-unit" placeholder="RJ2"></label>
+            <label class="field"><span>Turno</span><select id="user-filter-shift"><option value="">Todos</option><option>T1</option><option>T2</option><option>T3</option><option>Administrativo</option></select></label>
+            <label class="field"><span>Setor</span><input id="user-filter-department" placeholder="Operação"></label>
+            <div class="filter-actions"><button class="btn secondary" id="apply-user-filters-btn">Filtrar</button><button class="btn ghost" id="clear-user-filters-btn">Limpar filtros</button></div>
+          </div>
+          <div class="bulk-bar" id="user-bulk-bar" hidden>
+            <strong><span id="selected-users-count">0</span> usuário(s) selecionado(s)</strong>
+            <button class="btn secondary" data-user-bulk="activate">Ativar</button>
+            <button class="btn secondary" data-user-bulk="deactivate">Desativar</button>
+            <button class="btn secondary" data-user-bulk="block">Bloquear</button>
+            <button class="btn secondary" data-user-bulk="profile">Alterar perfil</button>
+            <button class="btn danger" data-user-bulk="delete">Excluir</button>
+          </div>
+          <div class="table-wrap"><table class="users-table"><thead><tr><th><input type="checkbox" id="select-all-users"></th><th>Usuário</th><th>Matrícula/ID</th><th>Perfil</th><th>Setor</th><th>Turno</th><th>Unidade/CD</th><th>Status</th><th>Último acesso</th><th>Criado em</th><th>Ações</th></tr></thead><tbody id="users-table"></tbody></table></div>
+        </article>
+      </section>
+
+      <section class="view" id="view-reports">
+        <div class="section-head"><div><h2>Relatórios</h2><p>Indicadores e exportações do controle de ativos.</p></div><div class="section-actions"><button class="btn secondary" data-export="csv">Exportar CSV</button><button class="btn secondary" data-export="excel">Exportar Excel</button><button class="btn secondary" data-export="pdf">Exportar PDF</button></div></div>
+        <div class="filters-grid report-filters"><label class="field"><span>Período</span><input id="report-period" type="month"></label><label class="field"><span>Status</span><select id="report-status"><option>Todos</option><option>Disponível</option><option>Em uso</option><option>Manutenção</option></select></label><label class="field"><span>Categoria</span><select id="report-category"><option>Todas</option><option>PDA</option><option>Notebook</option><option value="Radio">Rádio</option><option>Coletor</option><option>Impressora</option><option>Paleteira</option></select></label><label class="field"><span>Setor</span><input id="report-sector" placeholder="Área ou CD"></label></div>
+        <div class="metrics-grid" id="reports-metrics"></div>
+        <div class="reports-grid"><article class="panel"><h2>Ativos por status</h2><div id="report-status-chart" class="status-chart"></div></article><article class="panel"><h2>Ativos por categoria</h2><div id="report-category-chart" class="status-chart"></div></article><article class="panel"><h2>Requisições por período</h2><div id="report-requests" class="mini-list"></div></article><article class="panel"><h2>Movimentações recentes</h2><div id="report-movements" class="timeline"></div></article></div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="section-head"><div><h2>Configurações</h2><p>Preferências do sistema, API e unidade operacional.</p></div></div>
+        <article class="panel settings-panel">
+          <label class="field"><span>Status da API</span><input id="settings-api-status" disabled></label>
+          <label class="field"><span>URL da API</span><input id="settings-api-url" value="http://localhost:3001/api"></label>
+          <label class="field"><span>Unidade / CD</span><input id="settings-cd" value="RJ02"></label>
+          <label class="field"><span>Preferência do sistema</span><select id="settings-density"><option>Confortável</option><option>Compacto</option></select></label>
+          <button class="btn primary" id="save-settings-btn">Salvar configurações</button>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="asset-modal" hidden>
+    <form class="modal" id="asset-form">
+      <h2 id="asset-modal-title">Novo ativo</h2>
+      <input type="hidden" id="asset-id">
+      <label class="field"><span>Código de patrimônio</span><input id="asset-code" required></label>
+      <label class="field"><span>Tipo</span><select id="asset-type"><option>PDA</option><option>Notebook</option><option value="Radio">Rádio</option><option>Coletor</option><option>Impressora</option><option>Paleteira</option><option>Outro</option></select></label>
+      <label class="field"><span>Modelo</span><input id="asset-model"></label>
+      <label class="field"><span>Número de série</span><input id="asset-serial"></label>
+      <label class="field"><span>Filial / CD</span><input id="asset-branch" placeholder="RJ02"></label>
+      <label class="field"><span>Observações</span><input id="asset-notes"></label>
+      <div class="modal-actions"><button type="button" class="btn secondary" data-close-modal="asset-modal">Cancelar</button><button class="btn primary" type="submit">Salvar ativo</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="user-modal" hidden>
+    <form class="modal modal-large" id="user-form">
+      <h2 id="user-modal-title">Novo usuário</h2>
+      <input type="hidden" id="user-edit-id">
+      <div class="modal-grid">
+        <label class="field"><span>Nome completo</span><input id="user-name" required></label>
+        <label class="field"><span>E-mail corporativo</span><input id="user-email" type="email" required></label>
+        <label class="field"><span>Matrícula/ID</span><input id="user-registration" required></label>
+        <label class="field"><span>Telefone</span><input id="user-phone" placeholder="Opcional"></label>
+        <label class="field"><span>Setor</span><input id="user-department" required></label>
+        <label class="field"><span>Cargo/Função</span><input id="user-role" placeholder="Líder operacional"></label>
+        <label class="field"><span>Turno</span><select id="user-shift"><option>T1</option><option>T2</option><option>T3</option><option>Administrativo</option></select></label>
+        <label class="field"><span>Unidade/CD</span><input id="user-unit" value="RJ2"></label>
+        <label class="field"><span>Perfil de acesso</span><select id="user-profile"></select></label>
+        <label class="field"><span>Status inicial</span><select id="user-status"><option>Ativo</option><option>Pendente</option><option>Bloqueado</option><option>Inativo</option></select></label>
+        <label class="field"><span>Senha temporária</span><input id="user-password" type="password"></label>
+        <label class="field"><span>Confirmar senha</span><input id="user-password-confirm" type="password"></label>
+      </div>
+      <div class="checkbox-row"><label><input type="checkbox" id="user-must-change" checked> Obrigar troca de senha no primeiro acesso</label><label><input type="checkbox" id="user-send-email"> Enviar instruções de acesso por e-mail</label></div>
+      <div class="permissions-section" id="permissions-section"><h3>Permissões do usuário</h3><div id="permissions-matrix" class="permissions-matrix"></div></div>
+      <div class="modal-actions"><button type="button" class="btn secondary" data-close-modal="user-modal">Cancelar</button><button class="btn primary" type="submit" id="user-submit-btn">Criar usuário</button></div>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="user-view-modal" hidden><div class="modal modal-large"><h2>Detalhes do usuário</h2><div id="user-view-content" class="user-detail-grid"></div><div class="modal-actions"><button class="btn secondary" data-close-modal="user-view-modal">Fechar</button></div></div></div>
+  <div class="modal-backdrop" id="password-modal" hidden><form class="modal" id="password-form"><h2>Resetar senha do usuário</h2><p class="muted">Deseja gerar uma nova senha temporária para este usuário?</p><input type="hidden" id="password-user-id"><label class="field"><span>Nova senha temporária</span><input id="new-temp-password" type="password" required></label><label class="field"><span>Confirmar senha</span><input id="new-temp-password-confirm" type="password" required></label><label class="checkbox-row single"><input type="checkbox" id="force-password-change" checked> Obrigar troca no próximo login</label><div class="modal-actions"><button type="button" class="btn secondary" data-close-modal="password-modal">Cancelar</button><button class="btn primary" type="submit">Resetar senha</button></div></form></div>
+  <div class="modal-backdrop" id="delete-user-modal" hidden><div class="modal"><h2>Excluir usuário</h2><p>Esta ação não poderá ser desfeita. Deseja realmente excluir este usuário?</p><input type="hidden" id="delete-user-id"><div class="modal-actions"><button class="btn secondary" data-close-modal="delete-user-modal">Cancelar</button><button class="btn danger" id="confirm-delete-user-btn">Excluir usuário</button></div></div></div>
+  <div class="modal-backdrop" id="logs-modal" hidden><div class="modal modal-large"><h2>Logs de acesso e auditoria</h2><div id="access-logs-list" class="logs-list"></div><div class="modal-actions"><button class="btn secondary" data-close-modal="logs-modal">Fechar</button></div></div></div>
+
+  <div class="modal-backdrop" id="pending-detail-modal" hidden>
+    <div class="modal modal-large">
+      <h2>Detalhes da pendência</h2>
+      <div id="pending-detail-content" class="pending-detail-content"></div>
+      <div class="modal-actions">
+        <button class="btn secondary" id="pending-return-btn">Registrar devolução</button>
+        <button class="btn secondary" id="pending-justify-btn">Justificar pendência</button>
+        <button class="btn primary" id="pending-notify-btn">Cobrar liderança</button>
+        <button class="btn ghost" data-close-modal="pending-detail-modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="assets/controle-ativos.js"></script>
+</body>
+</html>
+
+
+
+
+
+

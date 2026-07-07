@@ -1,0 +1,6 @@
+﻿node_modules/
+npm-debug.log*
+.env
+.DS_Store
+controle_ativos.db-shm
+controle_ativos.db-wal
