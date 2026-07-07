@@ -62,7 +62,8 @@ app.use(
   cors({
     origin: function (origin, callback) {
       // Permite ferramentas como Postman/cURL (sem "origin") e as origens da lista
-      if (!origin || origensPermitidas.includes(origin)) {
+      const origemRender = typeof origin === 'string' && /^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(origin);
+      if (!origin || origensPermitidas.includes(origin) || origemRender) {
         callback(null, true);
       } else {
         callback(new Error('Origem nÃ£o permitida pelo CORS.'));
