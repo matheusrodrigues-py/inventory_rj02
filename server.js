@@ -74,8 +74,16 @@ app.use(
   })
 );
 
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'site-controle-ativo.html')));
+app.use('/assets', express.static(path.join(__dirname, 'assets'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.js')) res.type('application/javascript; charset=utf-8');
+    if (filePath.endsWith('.css')) res.type('text/css; charset=utf-8');
+  },
+}));
+app.get('/', (req, res) => {
+  res.type('html; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'site-controle-ativo.html'));
+});
 
 // -----------------------------------------------------------------------------
 // ROTAS
